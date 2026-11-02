@@ -1,0 +1,1505 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>UNIVERSAL SMART GAMEPAD — Your Phone. Your Controller. Your Game.</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,400;0,600;0,700;1,700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            pitch: '#06080d',
+            surface: '#0d111a',
+            surfaceBorder: '#1c2436',
+            cyanGlow: '#00f2fe',
+            cyanDim: '#009bb3',
+            neonBlue: '#4facfe',
+            accentOrange: '#ff9800',
+            accentRed: '#ff3366',
+            accentGreen: '#00e676'
+          },
+          fontFamily: {
+            gaming: ['"Chakra Petch"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace']
+          },
+          boxShadow: {
+            'cyan-glow': '0 0 20px rgba(0, 242, 254, 0.45)',
+            'cyan-glow-sm': '0 0 10px rgba(0, 242, 254, 0.3)',
+            'inner-glow': 'inset 0 0 15px rgba(0, 242, 254, 0.25)',
+            'btn-press': 'inset 0 4px 8px rgba(0,0,0,0.6)'
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    * {
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+      touch-action: manipulation;
+    }
+    body {
+      background-color: #06080d;
+      color: #e2e8f0;
+      font-family: 'Chakra Petch', sans-serif;
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Subtle futuristic grid background */
+    .bg-grid {
+      background-size: 32px 32px;
+      background-image: 
+        linear-gradient(to right, rgba(28, 36, 54, 0.35) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(28, 36, 54, 0.35) 1px, transparent 1px);
+    }
+
+    /* Custom scrollbars */
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0d111a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1c2436;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #00f2fe;
+    }
+
+    /* Pulse animation for connection indicator */
+    @keyframes pulse-cyan {
+      0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 8px #00f2fe; }
+      50% { opacity: 0.5; transform: scale(1.1); box-shadow: 0 0 18px #00f2fe; }
+    }
+    .status-pulse-connected {
+      animation: pulse-cyan 2s infinite ease-in-out;
+    }
+
+    /* Joystick base & thumbstick style */
+    .joystick-base {
+      touch-action: none;
+      background: radial-gradient(circle, rgba(13,17,26,0.9) 0%, rgba(6,8,13,0.95) 100%);
+      box-shadow: inset 0 0 15px rgba(0, 242, 254, 0.2), 0 4px 15px rgba(0,0,0,0.8);
+      border: 2px solid rgba(0, 242, 254, 0.35);
+    }
+    .joystick-thumb {
+      touch-action: none;
+      background: radial-gradient(circle, #4facfe 0%, #009bb3 70%, #004b5c 100%);
+      box-shadow: 0 0 12px rgba(0, 242, 254, 0.7);
+    }
+
+    /* Gamepad action button custom styling */
+    .gamepad-btn {
+      touch-action: none;
+      transition: transform 0.06s ease, box-shadow 0.06s ease, border-color 0.06s ease;
+    }
+    .gamepad-btn:active, .gamepad-btn.active-touch {
+      transform: scale(0.92) !important;
+      box-shadow: 0 0 18px rgba(0, 242, 254, 0.8), inset 0 2px 10px rgba(0, 242, 254, 0.4) !important;
+      border-color: #00f2fe !important;
+      background-color: rgba(0, 242, 254, 0.25) !important;
+    }
+
+    /* Orientation warning */
+    @media (orientation: portrait) {
+      #landscape-advisor {
+        display: flex !important;
+      }
+    }
+  </style>
+</head>
+<body class="bg-pitch text-slate-100 antialiased overflow-hidden select-none bg-grid flex flex-col justify-between h-screen w-screen">
+
+  <!-- TOP STATUS & TOOLBAR (Fixed HUD) -->
+  <header class="w-full h-12 bg-surface/90 border-b border-surfaceBorder px-3 flex items-center justify-between z-30 backdrop-blur-md shrink-0">
+    <div class="flex items-center space-x-3">
+      <div class="flex items-center space-x-2">
+        <svg class="w-6 h-6 text-cyanGlow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"></path>
+        </svg>
+        <span class="font-bold tracking-wider text-sm sm:text-base bg-clip-text text-transparent bg-gradient-to-r from-cyanGlow via-neonBlue to-white">
+          UNIVERSAL SMART GAMEPAD
+        </span>
+      </div>
+      <span class="hidden md:inline-block text-[11px] text-slate-400 font-mono border-l border-surfaceBorder pl-3">
+        YOUR PHONE. YOUR CONTROLLER. YOUR GAME.
+      </span>
+    </div>
+
+    <!-- Active Profile & Hardware Stat Pill -->
+    <div class="flex items-center space-x-2 text-xs">
+      <!-- Bluetooth Pill -->
+      <button id="nav-btn-bt" class="flex items-center space-x-1.5 bg-pitch/80 border border-surfaceBorder hover:border-cyanGlow px-2.5 py-1 rounded-full transition cursor-pointer">
+        <span id="nav-bt-dot" class="w-2.5 h-2.5 rounded-full bg-accentRed"></span>
+        <span id="nav-bt-label" class="font-mono text-[11px] text-slate-300">DISCONNECTED</span>
+      </button>
+
+      <!-- Latency Display -->
+      <div class="hidden sm:flex items-center space-x-1 px-2 py-1 rounded-md bg-pitch/60 border border-surfaceBorder text-[11px] font-mono">
+        <span class="text-slate-400">RTT:</span>
+        <span id="hud-latency" class="text-accentGreen">-- ms</span>
+      </div>
+
+      <!-- Quick Action Buttons -->
+      <button id="btn-toggle-studio" title="Customization Studio" class="p-1.5 rounded-lg border border-surfaceBorder hover:border-cyanGlow bg-surface hover:bg-slate-800 text-slate-300 transition">
+        <svg class="w-4 h-4 text-cyanGlow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+        </svg>
+      </button>
+
+      <button id="btn-toggle-settings" title="Settings & Profiles" class="p-1.5 rounded-lg border border-surfaceBorder hover:border-cyanGlow bg-surface hover:bg-slate-800 text-slate-300 transition">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+        </svg>
+      </button>
+
+      <button id="btn-toggle-fullscreen" title="Fullscreen Mode" class="p-1.5 rounded-lg border border-surfaceBorder hover:border-cyanGlow bg-surface hover:bg-slate-800 text-slate-300 transition">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN VIEWPORT CANVAS (GAMEPAD CANVAS) -->
+  <main id="gamepad-viewport" class="relative flex-1 w-full h-[calc(100vh-3rem)] overflow-hidden">
+
+    <!-- STUDIO EDITING WATERMARK / GRID SNAP INDICATOR -->
+    <div id="studio-banner" class="hidden absolute top-2 left-1/2 -translate-x-1/2 z-20 bg-accentOrange/90 text-black px-4 py-1 rounded-full text-xs font-bold tracking-wider shadow-lg flex items-center space-x-2">
+      <svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+      </svg>
+      <span>CUSTOMIZATION STUDIO ACTIVE — DRAG TO REPOSITION</span>
+      <button id="btn-studio-done" class="ml-2 bg-black text-white px-2 py-0.5 rounded text-[10px] hover:bg-slate-800">DONE</button>
+    </div>
+
+    <!-- LEFT ZONE: VIRTUAL ANALOG JOYSTICK -->
+    <div id="joystick-wrapper" class="absolute z-10 transition-all select-none" style="left: 40px; bottom: 40px; width: 180px; height: 180px;">
+      <div id="joystick-base" class="joystick-base w-full h-full rounded-full relative flex items-center justify-center cursor-pointer">
+        <!-- Directional indicators -->
+        <span class="absolute top-2 text-[10px] text-cyanGlow/60 font-mono font-bold">▲</span>
+        <span class="absolute bottom-2 text-[10px] text-cyanGlow/60 font-mono font-bold">▼</span>
+        <span class="absolute left-2 text-[10px] text-cyanGlow/60 font-mono font-bold">◀</span>
+        <span class="absolute right-2 text-[10px] text-cyanGlow/60 font-mono font-bold">▶</span>
+        <div class="absolute w-1/3 h-1/3 rounded-full border border-cyanGlow/20 pointer-events-none"></div>
+
+        <!-- Thumbstick handle -->
+        <div id="joystick-thumb" class="joystick-thumb w-20 h-20 rounded-full flex items-center justify-center transform transition-transform pointer-events-none">
+          <div class="w-6 h-6 rounded-full border border-white/40 bg-white/20"></div>
+        </div>
+      </div>
+      <div class="text-center mt-1 text-[11px] font-mono text-slate-400 font-semibold tracking-wider">
+        ANALOG STICK
+      </div>
+    </div>
+
+    <!-- CENTER ZONE: SMART MOUSE / TRACKPAD & HID MONITOR -->
+    <div id="center-touch-area" class="absolute left-1/2 bottom-5 -translate-x-1/2 w-[240px] sm:w-[280px] z-10 flex flex-col items-center">
+      <!-- Live Raw HID Report Descriptor Stream -->
+      <div class="w-full bg-surface/85 border border-surfaceBorder rounded-t-xl px-2 py-1 text-[10px] font-mono flex items-center justify-between text-slate-400 mb-1">
+        <span class="text-cyanGlow font-bold">HID REPORT [8-BYTE]:</span>
+        <span id="hid-hex-stream" class="text-cyanGlow font-bold tracking-widest">00 00 00 00 00 00 00 00</span>
+      </div>
+
+      <!-- Virtual Mouse Trackpad -->
+      <div id="mouse-trackpad" class="w-full h-28 sm:h-32 bg-surface/90 border-2 border-surfaceBorder hover:border-cyanGlow/60 rounded-xl relative overflow-hidden backdrop-blur flex flex-col justify-between p-2 shadow-inner">
+        <div class="flex items-center justify-between text-[10px] text-slate-400 font-mono pointer-events-none">
+          <span class="flex items-center space-x-1">
+            <svg class="w-3.5 h-3.5 text-cyanGlow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"></path></svg>
+            <span>SMART POINTER</span>
+          </span>
+          <span id="mouse-coords" class="text-slate-500">ΔX: 0 | ΔY: 0</span>
+        </div>
+
+        <div class="pointer-events-none text-center text-[11px] text-slate-500 italic">
+          Glide finger to control Smart TV cursor
+        </div>
+
+        <!-- Mouse Click Trigger Buttons -->
+        <div class="grid grid-cols-2 gap-2 mt-1 z-10">
+          <button id="btn-mouse-left" class="bg-pitch/90 hover:bg-cyanGlow/20 active:bg-cyanGlow text-slate-200 active:text-black border border-surfaceBorder rounded py-1.5 text-xs font-bold font-mono transition">
+            LEFT CLICK
+          </button>
+          <button id="btn-mouse-right" class="bg-pitch/90 hover:bg-neonBlue/20 active:bg-neonBlue text-slate-200 active:text-black border border-surfaceBorder rounded py-1.5 text-xs font-bold font-mono transition">
+            RIGHT CLICK
+          </button>
+        </div>
+      </div>
+      
+      <!-- Top Center Quick Utility: PAUSE / INVENTORY -->
+      <div class="flex space-x-2 mt-2">
+        <button data-bind-code="KeyP" data-btn-id="btn-pause" class="gamepad-btn bg-surface/90 border border-surfaceBorder text-slate-300 px-3 py-1 rounded-md text-xs font-mono font-bold hover:border-cyanGlow active:scale-95">
+          ⏸ PAUSE
+        </button>
+        <button data-bind-code="KeyI" data-btn-id="btn-inv" class="gamepad-btn bg-surface/90 border border-surfaceBorder text-slate-300 px-3 py-1 rounded-md text-xs font-mono font-bold hover:border-cyanGlow active:scale-95">
+          🎒 INVENTORY
+        </button>
+      </div>
+    </div>
+
+    <!-- RIGHT ZONE: DYNAMIC ACTION BUTTON CLUSTER -->
+    <div id="action-cluster-container" class="absolute right-0 top-0 bottom-0 left-0 pointer-events-none z-10">
+      <!-- Buttons will be dynamically positioned and draggable according to profiles/layouts -->
+      <div id="dynamic-button-root" class="w-full h-full relative"></div>
+    </div>
+  </main>
+
+  <!-- LANDSCAPE ORIENTATION ADVISOR MODAL (Auto prompts on portrait phones) -->
+  <div id="landscape-advisor" class="hidden fixed inset-0 z-50 bg-pitch/95 flex flex-col items-center justify-center p-6 text-center backdrop-blur-xl">
+    <div class="w-20 h-20 mb-6 rounded-2xl bg-cyanGlow/10 border border-cyanGlow/40 flex items-center justify-center animate-bounce">
+      <svg class="w-10 h-10 text-cyanGlow transform rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+      </svg>
+    </div>
+    <h2 class="text-2xl font-bold tracking-wider text-cyanGlow mb-2">ROTATE PHONE TO LANDSCAPE</h2>
+    <p class="text-sm text-slate-300 max-w-sm mb-6 leading-relaxed">
+      Universal Smart Gamepad is crafted for ergonomic dual-thumb console gaming. Turn your device horizontally and tap the button below.
+    </p>
+    <div class="flex flex-col sm:flex-row gap-3">
+      <button id="btn-request-landscape" class="px-6 py-3 rounded-xl bg-gradient-to-r from-cyanGlow to-neonBlue text-black font-bold tracking-wider hover:opacity-90 shadow-cyan-glow transition">
+        ENTER FULLSCREEN LANDSCAPE
+      </button>
+      <button id="btn-dismiss-landscape" class="px-4 py-3 rounded-xl border border-surfaceBorder text-slate-400 hover:text-white text-xs">
+        STAY IN PORTRAIT
+      </button>
+    </div>
+  </div>
+
+  <!-- BLUETOOTH CONNECTION CENTER MODAL -->
+  <div id="modal-bluetooth" class="hidden fixed inset-0 z-40 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+    <div id="modal-bluetooth-card" class="bg-surface border border-surfaceBorder rounded-2xl max-w-lg w-full p-5 shadow-2xl relative max-h-[85vh] overflow-y-auto">
+      <div class="flex items-center justify-between pb-3 border-b border-surfaceBorder sticky top-0 bg-surface/95 backdrop-blur z-10">
+        <div class="flex items-center space-x-2">
+          <svg class="w-5 h-5 text-cyanGlow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v18l7-5-7-4 7-5-7-4z"></path>
+          </svg>
+          <h3 class="text-lg font-bold text-white tracking-wide">BLUETOOTH HID CONNECTION</h3>
+        </div>
+        <!-- High-visibility Large Close Button -->
+        <button id="btn-close-bt-modal" aria-label="Close" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-accentRed/20 hover:bg-accentRed text-accentRed hover:text-white border border-accentRed/40 font-bold text-xs tracking-wider transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
+          <span>CLOSE</span>
+        </button>
+      </div>
+
+      <!-- State Card -->
+      <div class="my-4 p-4 rounded-xl bg-pitch/80 border border-surfaceBorder flex items-center justify-between">
+        <div>
+          <div class="text-xs text-slate-400 font-mono">STATUS</div>
+          <div id="bt-modal-status-text" class="text-base font-bold text-slate-200 mt-0.5">READY TO PAIR</div>
+          <div id="bt-modal-device-name" class="text-xs font-mono text-cyanGlow">No Device Connected</div>
+        </div>
+        <div id="bt-indicator-pulse" class="w-4 h-4 rounded-full bg-accentRed"></div>
+      </div>
+
+      <!-- Actions -->
+      <div class="grid grid-cols-2 gap-3 mb-4">
+        <button id="btn-scan-connect" class="flex items-center justify-center space-x-2 py-3 px-4 rounded-xl bg-gradient-to-r from-cyanGlow to-neonBlue text-black font-bold text-sm tracking-wider shadow-cyan-glow hover:opacity-95 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+          <span>SCAN & PAIR TV</span>
+        </button>
+        <button id="btn-disconnect" disabled class="py-3 px-4 rounded-xl bg-surface border border-surfaceBorder text-slate-400 disabled:opacity-40 font-bold text-sm hover:border-accentRed hover:text-accentRed transition">
+          DISCONNECT
+        </button>
+      </div>
+
+      <!-- Auto Reconnection & HID Options -->
+      <div class="space-y-3 bg-pitch/50 p-3 rounded-xl border border-surfaceBorder text-xs text-slate-300 font-mono">
+        <label class="flex items-center justify-between cursor-pointer">
+          <span>AUTOMATIC RECONNECTION</span>
+          <input type="checkbox" id="chk-auto-reconnect" checked class="w-4 h-4 accent-cyanGlow rounded">
+        </label>
+        <label class="flex items-center justify-between cursor-pointer">
+          <span>SIMULATED HID TRANSMIT (LOCAL TEST)</span>
+          <input type="checkbox" id="chk-simulated-loopback" checked class="w-4 h-4 accent-cyanGlow rounded">
+        </label>
+      </div>
+
+      <!-- Diagnostic / Android HID Compatibility Advisor -->
+      <div class="mt-4 p-3 rounded-lg bg-slate-900/90 border border-slate-700 text-[11px] leading-relaxed text-slate-300">
+        <div class="font-bold text-cyanGlow flex items-center space-x-1.5 mb-1">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          <span>ANDROID BLUETOOTH HID ADVISOR</span>
+        </div>
+        <p class="text-slate-400">
+          Android supports HID Device host/peripheral role via standard Bluetooth HID Profiles. When pairing with your Android Smart TV, Google TV, or Fire TV, select your TV from the Web Bluetooth prompt. For native system-level HID injection, the TV must support standard Gamepad HID profiles.
+        </p>
+      </div>
+
+      <!-- System Diagnostic Log -->
+      <div class="mt-3">
+        <div class="text-[10px] text-slate-400 font-mono mb-1">EVENT LOG:</div>
+        <div id="bt-log-stream" class="h-20 overflow-y-auto bg-black p-2 rounded border border-surfaceBorder font-mono text-[10px] text-emerald-400 space-y-0.5">
+          <div>[SYSTEM] Bluetooth stack initialized. Ready for pairing.</div>
+        </div>
+      </div>
+
+      <!-- Prominent Bottom Button to Start Gamepad & Close Modal -->
+      <div class="mt-4 pt-3 border-t border-surfaceBorder">
+        <button id="btn-start-gamepad-dismiss" class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-cyanGlow to-neonBlue text-black font-bold tracking-wider text-sm flex items-center justify-center space-x-2 shadow-cyan-glow hover:opacity-95 transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+          </svg>
+          <span>START GAMEPAD & RETURN TO CONTROLS</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STUDIO CONTROLLER CUSTOMIZATION DRAWER -->
+  <div id="panel-studio" class="hidden fixed bottom-0 left-0 right-0 z-40 bg-surface/95 border-t border-surfaceBorder p-4 backdrop-blur-xl shadow-2xl max-h-[50vh] overflow-y-auto">
+    <div class="max-w-4xl mx-auto">
+      <div class="flex items-center justify-between pb-3 border-b border-surfaceBorder">
+        <div class="flex items-center space-x-2">
+          <h3 class="text-sm sm:text-base font-bold text-cyanGlow">GAMEPAD CUSTOMIZATION STUDIO</h3>
+          <span class="text-xs bg-cyanGlow/20 text-cyanGlow px-2 py-0.5 rounded font-mono">LIVE DRAG & EDIT</span>
+        </div>
+        <div class="flex items-center space-x-2">
+          <button id="btn-add-custom-btn" class="bg-cyanGlow/20 border border-cyanGlow text-cyanGlow hover:bg-cyanGlow hover:text-black px-3 py-1 rounded text-xs font-bold font-mono transition">
+            + ADD BUTTON
+          </button>
+          <button id="btn-reset-layout" class="bg-surface border border-surfaceBorder text-slate-300 hover:text-white px-3 py-1 rounded text-xs font-mono transition">
+            RESET TO DEFAULT
+          </button>
+          <button id="btn-close-studio" class="bg-cyanGlow text-black px-4 py-1 rounded font-bold text-xs">
+            DONE
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-3 text-xs font-mono">
+        <!-- Scale & Transparency -->
+        <div class="bg-pitch/60 p-3 rounded-xl border border-surfaceBorder space-y-2">
+          <div class="font-bold text-white mb-1">GLOBAL CONTROLS SCALE</div>
+          <div>
+            <label class="flex justify-between text-slate-400">BUTTON SCALE: <span id="val-btn-scale">1.0x</span></label>
+            <input type="range" id="slider-btn-scale" min="0.7" max="1.5" step="0.05" value="1.0" class="w-full accent-cyanGlow">
+          </div>
+          <div>
+            <label class="flex justify-between text-slate-400">STICK SCALE: <span id="val-stick-scale">1.0x</span></label>
+            <input type="range" id="slider-stick-scale" min="0.7" max="1.4" step="0.05" value="1.0" class="w-full accent-cyanGlow">
+          </div>
+          <div>
+            <label class="flex justify-between text-slate-400">OPACITY: <span id="val-btn-opacity">90%</span></label>
+            <input type="range" id="slider-btn-opacity" min="0.3" max="1.0" step="0.05" value="0.9" class="w-full accent-cyanGlow">
+          </div>
+        </div>
+
+        <!-- Snap & Touch Behavior -->
+        <div class="bg-pitch/60 p-3 rounded-xl border border-surfaceBorder space-y-2">
+          <div class="font-bold text-white mb-1">LAYOUT SNAPPING</div>
+          <label class="flex items-center justify-between cursor-pointer py-1">
+            <span class="text-slate-400">SNAP TO 16px GRID</span>
+            <input type="checkbox" id="chk-grid-snap" checked class="accent-cyanGlow w-4 h-4">
+          </label>
+          <label class="flex items-center justify-between cursor-pointer py-1">
+            <span class="text-slate-400">TOUCH HAPTIC VIBRATE</span>
+            <input type="checkbox" id="chk-haptic-feedback" checked class="accent-cyanGlow w-4 h-4">
+          </label>
+          <label class="flex items-center justify-between cursor-pointer py-1">
+            <span class="text-slate-400">AUDIO BLIP FEEDBACK</span>
+            <input type="checkbox" id="chk-audio-feedback" checked class="accent-cyanGlow w-4 h-4">
+          </label>
+        </div>
+
+        <!-- Selected Button Inspector -->
+        <div id="inspector-panel" class="bg-pitch/60 p-3 rounded-xl border border-surfaceBorder space-y-2">
+          <div class="font-bold text-cyanGlow mb-1">BUTTON INSPECTOR</div>
+          <div id="inspector-no-selection" class="text-slate-500 italic py-2">
+            Click any button on screen to modify its label, mapped key, or remove it.
+          </div>
+          <div id="inspector-content" class="hidden space-y-2">
+            <div>
+              <span class="text-slate-400">LABEL:</span>
+              <input type="text" id="inspector-label-input" class="w-full bg-surface border border-surfaceBorder rounded px-2 py-1 text-white text-xs mt-0.5">
+            </div>
+            <div>
+              <span class="text-slate-400">KEY / HID MAPPING:</span>
+              <select id="inspector-keycode-select" class="w-full bg-surface border border-surfaceBorder rounded px-2 py-1 text-white text-xs mt-0.5">
+                <option value="KeyE">E (USE / INTERACT)</option>
+                <option value="KeyF">F (PLACE / PICKUP)</option>
+                <option value="ShiftLeft">SHIFT (RUN / SPRINT)</option>
+                <option value="Space">SPACE (JUMP)</option>
+                <option value="KeyC">C (CROUCH)</option>
+                <option value="KeyJ">J (ATTACK / FIRE)</option>
+                <option value="KeyR">R (RELOAD)</option>
+                <option value="KeyI">I (INVENTORY)</option>
+                <option value="KeyP">P (PAUSE)</option>
+                <option value="KeyQ">Q (SPECIAL 1)</option>
+                <option value="KeyX">X (SPECIAL 2)</option>
+              </select>
+            </div>
+            <button id="btn-delete-inspected" class="w-full bg-accentRed/20 hover:bg-accentRed border border-accentRed text-accentRed hover:text-white py-1 rounded transition text-xs font-bold">
+              REMOVE BUTTON
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTINGS & PROFILES MODAL -->
+  <div id="modal-settings" class="hidden fixed inset-0 z-40 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bg-surface border border-surfaceBorder rounded-2xl max-w-xl w-full p-5 shadow-2xl relative max-h-[85vh] overflow-y-auto">
+      <div class="flex items-center justify-between pb-3 border-b border-surfaceBorder">
+        <div class="flex items-center space-x-2">
+          <svg class="w-5 h-5 text-cyanGlow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+          <h3 class="text-base font-bold text-white tracking-wide">SETTINGS & GAME PROFILES</h3>
+        </div>
+        <button id="btn-close-settings-modal" class="text-slate-400 hover:text-white p-1">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+
+      <!-- PRESET PROFILES SELECTOR -->
+      <div class="mt-4">
+        <label class="block text-xs font-mono text-cyanGlow font-bold uppercase mb-2">ACTIVE GAME PROFILE</label>
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+          <button data-profile="default" class="profile-chip py-2 px-3 rounded-lg border border-cyanGlow bg-cyanGlow/10 text-cyanGlow text-xs font-bold font-mono transition text-left">
+            ⚡ DEFAULT ALL-ROUND
+          </button>
+          <button data-profile="granny" class="profile-chip py-2 px-3 rounded-lg border border-surfaceBorder bg-pitch text-slate-300 hover:border-cyanGlow text-xs font-bold font-mono transition text-left">
+            👵 GRANNY PROFILE
+          </button>
+          <button data-profile="shooter" class="profile-chip py-2 px-3 rounded-lg border border-surfaceBorder bg-pitch text-slate-300 hover:border-cyanGlow text-xs font-bold font-mono transition text-left">
+            🎯 FPS SHOOTING
+          </button>
+          <button data-profile="racing" class="profile-chip py-2 px-3 rounded-lg border border-surfaceBorder bg-pitch text-slate-300 hover:border-cyanGlow text-xs font-bold font-mono transition text-left">
+            🏎 RACING GAME
+          </button>
+          <button data-profile="adventure" class="profile-chip py-2 px-3 rounded-lg border border-surfaceBorder bg-pitch text-slate-300 hover:border-cyanGlow text-xs font-bold font-mono transition text-left">
+            ⚔ ADVENTURE RPG
+          </button>
+          <button data-profile="custom" class="profile-chip py-2 px-3 rounded-lg border border-surfaceBorder bg-pitch text-slate-300 hover:border-cyanGlow text-xs font-bold font-mono transition text-left">
+            🛠 CUSTOM PROFILE
+          </button>
+        </div>
+      </div>
+
+      <!-- SENSITIVITY CALIBRATION -->
+      <div class="mt-5 space-y-4 font-mono text-xs">
+        <div class="text-white font-bold tracking-wider border-b border-surfaceBorder pb-1">ANALOG & POINTER CALIBRATION</div>
+        <div>
+          <div class="flex justify-between text-slate-300 mb-1">
+            <span>JOYSTICK SENSITIVITY:</span>
+            <span id="val-joy-sens" class="text-cyanGlow">1.2x</span>
+          </div>
+          <input type="range" id="slider-joy-sens" min="0.5" max="2.5" step="0.1" value="1.2" class="w-full accent-cyanGlow">
+        </div>
+        <div>
+          <div class="flex justify-between text-slate-300 mb-1">
+            <span>JOYSTICK DEADZONE:</span>
+            <span id="val-joy-deadzone" class="text-cyanGlow">12%</span>
+          </div>
+          <input type="range" id="slider-joy-deadzone" min="0" max="30" step="1" value="12" class="w-full accent-cyanGlow">
+        </div>
+        <div>
+          <div class="flex justify-between text-slate-300 mb-1">
+            <span>SMART MOUSE TRACKPAD SENSITIVITY:</span>
+            <span id="val-mouse-sens" class="text-cyanGlow">1.5x</span>
+          </div>
+          <input type="range" id="slider-mouse-sens" min="0.5" max="3.0" step="0.1" value="1.5" class="w-full accent-cyanGlow">
+        </div>
+      </div>
+
+      <!-- PROFILE EXPORT / IMPORT -->
+      <div class="mt-6 pt-4 border-t border-surfaceBorder">
+        <div class="text-slate-400 font-mono text-xs mb-2">BACKUP & SHARE CONTROLLER LAYOUTS:</div>
+        <div class="flex space-x-2">
+          <button id="btn-export-profile" class="flex-1 py-2 bg-pitch border border-surfaceBorder hover:border-cyanGlow text-slate-200 text-xs font-mono rounded-lg transition">
+            EXPORT TO JSON
+          </button>
+          <button id="btn-import-profile" class="flex-1 py-2 bg-pitch border border-surfaceBorder hover:border-cyanGlow text-slate-200 text-xs font-mono rounded-lg transition">
+            IMPORT FROM JSON
+          </button>
+          <input type="file" id="file-import-input" accept=".json" class="hidden">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div id="toast-container" class="fixed top-14 right-4 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+  <!-- APPLICATION LOGIC SCRIPT -->
+  <script>
+    /**
+     * UNIVERSAL SMART GAMEPAD
+     * State Machine & Controller Engine
+     */
+
+    // --- Audio Feedback Synthesizer (Web Audio API) ---
+    class AudioFX {
+      constructor() {
+        this.ctx = null;
+        this.enabled = true;
+      }
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioContext();
+        }
+      }
+      playBlip(freq = 600, duration = 0.04, type = 'sine') {
+        if (!this.enabled) return;
+        try {
+          this.init();
+          if (this.ctx.state === 'suspended') this.ctx.resume();
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = type;
+          osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+          gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(this.ctx.currentTime + duration);
+        } catch(e) {
+          // Ignore audio errors
+        }
+      }
+    }
+    const soundEngine = new AudioFX();
+
+    // --- Controller Layout Configurations ---
+    const DEFAULT_PROFILES = {
+      default: {
+        name: "Default All-Round",
+        buttons: [
+          { id: 'btn-use', label: 'USE', key: 'KeyE', x: 88, y: 72, size: 68, color: 'cyan' },
+          { id: 'btn-place', label: 'PLACE', key: 'KeyF', x: 76, y: 84, size: 62, color: 'blue' },
+          { id: 'btn-run', label: 'RUN', key: 'ShiftLeft', x: 88, y: 38, size: 62, color: 'cyan' },
+          { id: 'btn-jump', label: 'JUMP', key: 'Space', x: 76, y: 52, size: 68, color: 'cyan' },
+          { id: 'btn-crouch', label: 'CROUCH', key: 'KeyC', x: 65, y: 68, size: 56, color: 'blue' },
+          { id: 'btn-attack', label: 'ATTACK', key: 'KeyJ', x: 88, y: 20, size: 64, color: 'orange' },
+          { id: 'btn-reload', label: 'RELOAD', key: 'KeyR', x: 76, y: 22, size: 56, color: 'blue' },
+          { id: 'btn-custom', label: 'SPECIAL', key: 'KeyQ', x: 65, y: 36, size: 54, color: 'gray' },
+        ]
+      },
+      granny: {
+        name: "Granny Profile",
+        buttons: [
+          { id: 'btn-use', label: 'INTERACT', key: 'KeyE', x: 86, y: 65, size: 84, color: 'cyan' },
+          { id: 'btn-place', label: 'DROP ITEM', key: 'KeyF', x: 72, y: 80, size: 76, color: 'blue' },
+          { id: 'btn-crouch', label: 'CROUCH', key: 'KeyC', x: 86, y: 35, size: 76, color: 'orange' },
+          { id: 'btn-run', label: 'RUN', key: 'ShiftLeft', x: 72, y: 25, size: 70, color: 'cyan' },
+          { id: 'btn-inv', label: 'ITEMS', key: 'KeyI', x: 58, y: 55, size: 65, color: 'gray' }
+        ]
+      },
+      shooter: {
+        name: "FPS Shooting",
+        buttons: [
+          { id: 'btn-attack', label: 'FIRE', key: 'KeyJ', x: 88, y: 62, size: 82, color: 'orange' },
+          { id: 'btn-reload', label: 'RELOAD', key: 'KeyR', x: 74, y: 78, size: 66, color: 'blue' },
+          { id: 'btn-jump', label: 'JUMP', key: 'Space', x: 88, y: 28, size: 66, color: 'cyan' },
+          { id: 'btn-crouch', label: 'CROUCH', key: 'KeyC', x: 74, y: 44, size: 64, color: 'blue' },
+          { id: 'btn-run', label: 'SPRINT', key: 'ShiftLeft', x: 60, y: 62, size: 60, color: 'cyan' },
+          { id: 'btn-use', label: 'USE', key: 'KeyE', x: 60, y: 30, size: 58, color: 'cyan' },
+        ]
+      },
+      racing: {
+        name: "Racing Game",
+        buttons: [
+          { id: 'btn-attack', label: 'GAS (ACCEL)', key: 'KeyW', x: 86, y: 65, size: 88, color: 'cyan' },
+          { id: 'btn-crouch', label: 'BRAKE', key: 'KeyS', x: 70, y: 78, size: 80, color: 'orange' },
+          { id: 'btn-run', label: 'NITRO / BOOST', key: 'ShiftLeft', x: 86, y: 30, size: 72, color: 'orange' },
+          { id: 'btn-jump', label: 'HANDBRAKE', key: 'Space', x: 70, y: 40, size: 70, color: 'blue' },
+          { id: 'btn-custom', label: 'CAMERA', key: 'KeyC', x: 56, y: 60, size: 58, color: 'gray' }
+        ]
+      },
+      adventure: {
+        name: "Adventure RPG",
+        buttons: [
+          { id: 'btn-attack', label: 'SWORD/ATK', key: 'KeyJ', x: 88, y: 65, size: 74, color: 'orange' },
+          { id: 'btn-jump', label: 'ROLL/DODGE', key: 'Space', x: 74, y: 80, size: 70, color: 'cyan' },
+          { id: 'btn-use', label: 'TALK/LOOT', key: 'KeyE', x: 88, y: 32, size: 68, color: 'cyan' },
+          { id: 'btn-run', label: 'SPRINT', key: 'ShiftLeft', x: 74, y: 46, size: 62, color: 'blue' },
+          { id: 'btn-custom', label: 'MAGIC/CAST', key: 'KeyQ', x: 60, y: 62, size: 60, color: 'orange' },
+          { id: 'btn-inv', label: 'BAG', key: 'KeyI', x: 60, y: 32, size: 55, color: 'gray' }
+        ]
+      },
+      custom: {
+        name: "Custom Profile",
+        buttons: [
+          { id: 'btn-c1', label: 'ACT 1', key: 'KeyE', x: 85, y: 70, size: 70, color: 'cyan' },
+          { id: 'btn-c2', label: 'ACT 2', key: 'Space', x: 70, y: 80, size: 70, color: 'blue' },
+          { id: 'btn-c3', label: 'ACT 3', key: 'KeyJ', x: 85, y: 35, size: 70, color: 'orange' },
+        ]
+      }
+    };
+
+    // --- State Store ---
+    const state = {
+      connected: false,
+      device: null,
+      server: null,
+      autoReconnect: true,
+      simulatedLoopback: true,
+      lastLatency: 18,
+      studioMode: false,
+      selectedBtnId: null,
+      gridSnap: true,
+      haptics: true,
+      audio: true,
+      globalBtnScale: 1.0,
+      globalStickScale: 1.0,
+      globalOpacity: 0.9,
+      joystickSens: 1.2,
+      joystickDeadzone: 12,
+      mouseSens: 1.5,
+      activeProfileKey: 'default',
+      profileData: JSON.parse(JSON.stringify(DEFAULT_PROFILES.default)),
+      // HID Gamepad raw byte state (8 bytes)
+      // Byte 0: Buttons 0-7, Byte 1: Buttons 8-15, Byte 2: Stick X, Byte 3: Stick Y, etc.
+      hidReport: new Uint8Array(8),
+      mouseReport: new Uint8Array(4) // buttons, deltaX, deltaY, scroll
+    };
+
+    // --- Toast Notifications ---
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      const colors = {
+        info: 'border-cyanGlow/60 text-cyanGlow bg-surface/95',
+        success: 'border-accentGreen/60 text-accentGreen bg-surface/95',
+        error: 'border-accentRed/60 text-accentRed bg-surface/95',
+        warn: 'border-accentOrange/60 text-accentOrange bg-surface/95'
+      };
+      toast.className = `border px-3.5 py-2 rounded-xl text-xs font-mono shadow-xl backdrop-blur flex items-center space-x-2 transition-all transform duration-300 opacity-0 translate-x-4 ${colors[type] || colors.info}`;
+      toast.innerHTML = `<span>●</span><span>${message}</span>`;
+      container.appendChild(toast);
+      
+      requestAnimationFrame(() => {
+        toast.classList.remove('opacity-0', 'translate-x-4');
+      });
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-x-4');
+        setTimeout(() => toast.remove(), 350);
+      }, 3200);
+    }
+
+    // --- Bluetooth Log Helper ---
+    function logBt(message) {
+      const logStream = document.getElementById('bt-log-stream');
+      const row = document.createElement('div');
+      const time = new Date().toTimeString().split(' ')[0];
+      row.textContent = `[${time}] ${message}`;
+      logStream.appendChild(row);
+      logStream.scrollTop = logStream.scrollHeight;
+    }
+
+    // --- Render Dynamic Buttons ---
+    const dynamicRoot = document.getElementById('dynamic-button-root');
+
+    function renderButtons() {
+      dynamicRoot.innerHTML = '';
+      const colorSchemes = {
+        cyan: 'bg-pitch/90 text-cyanGlow border-cyanGlow/50 hover:border-cyanGlow',
+        blue: 'bg-pitch/90 text-neonBlue border-neonBlue/50 hover:border-neonBlue',
+        orange: 'bg-pitch/90 text-accentOrange border-accentOrange/50 hover:border-accentOrange',
+        gray: 'bg-pitch/90 text-slate-300 border-slate-600 hover:border-white'
+      };
+
+      state.profileData.buttons.forEach(btn => {
+        const el = document.createElement('div');
+        el.id = btn.id;
+        el.className = `gamepad-btn absolute rounded-full flex flex-col items-center justify-center font-bold border-2 cursor-pointer shadow-lg select-none backdrop-blur-md pointer-events-auto transition-transform ${colorSchemes[btn.color] || colorSchemes.cyan}`;
+        
+        const effectiveSize = btn.size * state.globalBtnScale;
+        el.style.width = `${effectiveSize}px`;
+        el.style.height = `${effectiveSize}px`;
+        el.style.right = `${100 - btn.x}%`;
+        el.style.bottom = `${btn.y}%`;
+        el.style.opacity = state.globalOpacity;
+
+        el.dataset.bindCode = btn.key;
+        el.dataset.btnId = btn.id;
+
+        // Label and Subtext
+        el.innerHTML = `
+          <span class="text-xs sm:text-sm tracking-wide font-gaming pointer-events-none">${btn.label}</span>
+          <span class="text-[9px] opacity-60 font-mono pointer-events-none">${btn.key.replace('Key', '')}</span>
+        `;
+
+        if (state.studioMode) {
+          el.classList.add('ring-2', 'ring-accentOrange', 'ring-offset-2', 'ring-offset-black');
+          setupDragAndDrop(el, btn);
+        } else {
+          setupTouchInput(el, btn);
+        }
+
+        dynamicRoot.appendChild(el);
+      });
+    }
+
+    // --- Haptic & Audio Trigger ---
+    function triggerFeedback() {
+      if (state.haptics && 'vibrate' in navigator) {
+        navigator.vibrate(15);
+      }
+      if (state.audio) {
+        soundEngine.playBlip(750, 0.03, 'sine');
+      }
+    }
+
+    // --- Touch Input Handler for Gamepad Action Buttons ---
+    function setupTouchInput(element, btnConfig) {
+      const handleDown = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        element.classList.add('active-touch');
+        triggerFeedback();
+        updateHidButton(btnConfig.id, true);
+      };
+
+      const handleUp = (e) => {
+        element.classList.remove('active-touch');
+        updateHidButton(btnConfig.id, false);
+      };
+
+      element.addEventListener('touchstart', handleDown, { passive: false });
+      element.addEventListener('touchend', handleUp);
+      element.addEventListener('touchcancel', handleUp);
+      element.addEventListener('mousedown', handleDown);
+      element.addEventListener('mouseup', handleUp);
+      element.addEventListener('mouseleave', handleUp);
+    }
+
+    // --- Drag and Drop Repositioning in Customization Studio ---
+    function setupDragAndDrop(element, btnConfig) {
+      let isDragging = false;
+      let startX, startY;
+      let initialRight, initialBottom;
+      const viewport = document.getElementById('gamepad-viewport');
+
+      const onPointerDown = (e) => {
+        isDragging = true;
+        state.selectedBtnId = btnConfig.id;
+        inspectButton(btnConfig);
+
+        const pageX = e.touches ? e.touches[0].clientX : e.clientX;
+        const pageY = e.touches ? e.touches[0].clientY : e.clientY;
+
+        startX = pageX;
+        startY = pageY;
+
+        initialRight = 100 - btnConfig.x;
+        initialBottom = btnConfig.y;
+
+        element.style.zIndex = '50';
+        element.style.transform = 'scale(1.1)';
+        triggerFeedback();
+      };
+
+      const onPointerMove = (e) => {
+        if (!isDragging) return;
+        const pageX = e.touches ? e.touches[0].clientX : e.clientX;
+        const pageY = e.touches ? e.touches[0].clientY : e.clientY;
+
+        const deltaX = pageX - startX;
+        const deltaY = startY - pageY; // Inverted for bottom%
+
+        const vpWidth = viewport.clientWidth;
+        const vpHeight = viewport.clientHeight;
+
+        let newRightPercent = initialRight - (deltaX / vpWidth) * 100;
+        let newBottomPercent = initialBottom + (deltaY / vpHeight) * 100;
+
+        // Snapping logic (to ~2% steps)
+        if (state.gridSnap) {
+          newRightPercent = Math.round(newRightPercent / 2) * 2;
+          newBottomPercent = Math.round(newBottomPercent / 2) * 2;
+        }
+
+        // Clamp
+        newRightPercent = Math.max(2, Math.min(85, newRightPercent));
+        newBottomPercent = Math.max(5, Math.min(90, newBottomPercent));
+
+        element.style.right = `${newRightPercent}%`;
+        element.style.bottom = `${newBottomPercent}%`;
+
+        btnConfig.x = 100 - newRightPercent;
+        btnConfig.y = newBottomPercent;
+      };
+
+      const onPointerUp = () => {
+        if (!isDragging) return;
+        isDragging = false;
+        element.style.zIndex = '10';
+        element.style.transform = '';
+        saveLayoutToStorage();
+      };
+
+      element.addEventListener('touchstart', onPointerDown, { passive: false });
+      element.addEventListener('touchmove', onPointerMove, { passive: false });
+      element.addEventListener('touchend', onPointerUp);
+      element.addEventListener('mousedown', onPointerDown);
+      window.addEventListener('mousemove', onPointerMove);
+      window.addEventListener('mouseup', onPointerUp);
+    }
+
+    // --- Button Inspector Sync ---
+    function inspectButton(btn) {
+      document.getElementById('inspector-no-selection').classList.add('hidden');
+      const content = document.getElementById('inspector-content');
+      content.classList.remove('hidden');
+
+      const labelInput = document.getElementById('inspector-label-input');
+      const keySelect = document.getElementById('inspector-keycode-select');
+
+      labelInput.value = btn.label;
+      keySelect.value = btn.key;
+
+      labelInput.oninput = (e) => {
+        btn.label = e.target.value.toUpperCase();
+        renderButtons();
+        saveLayoutToStorage();
+      };
+
+      keySelect.onchange = (e) => {
+        btn.key = e.target.value;
+        renderButtons();
+        saveLayoutToStorage();
+      };
+
+      document.getElementById('btn-delete-inspected').onclick = () => {
+        state.profileData.buttons = state.profileData.buttons.filter(b => b.id !== btn.id);
+        document.getElementById('inspector-no-selection').classList.remove('hidden');
+        content.classList.add('hidden');
+        renderButtons();
+        saveLayoutToStorage();
+        showToast('Button removed from layout', 'warn');
+      };
+    }
+
+    // --- Virtual Analog Joystick Math & Tracking ---
+    const joystickBase = document.getElementById('joystick-base');
+    const joystickThumb = document.getElementById('joystick-thumb');
+    let joystickActive = false;
+    let joystickOrigin = { x: 0, y: 0 };
+    let joyMaxRadius = 60;
+
+    function handleJoyStart(e) {
+      e.preventDefault();
+      joystickActive = true;
+      const rect = joystickBase.getBoundingClientRect();
+      joystickOrigin = {
+        x: rect.left + rect.width / 2,
+        y: rect.top + rect.height / 2
+      };
+      joyMaxRadius = (rect.width / 2) - 10;
+      handleJoyMove(e);
+      triggerFeedback();
+    }
+
+    function handleJoyMove(e) {
+      if (!joystickActive) return;
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+      let dx = clientX - joystickOrigin.x;
+      let dy = clientY - joystickOrigin.y;
+      const distance = Math.hypot(dx, dy);
+
+      // Deadzone check
+      const deadzonePixels = (joyMaxRadius * (state.joystickDeadzone / 100));
+      let normDistance = distance;
+
+      if (distance > joyMaxRadius) {
+        dx = (dx / distance) * joyMaxRadius;
+        dy = (dy / distance) * joyMaxRadius;
+        normDistance = joyMaxRadius;
+      }
+
+      joystickThumb.style.transform = `translate(${dx}px, ${dy}px)`;
+
+      // Map to HID axes (-127 to 127)
+      let axisX = 0;
+      let axisY = 0;
+
+      if (distance > deadzonePixels) {
+        const factor = state.joystickSens;
+        axisX = Math.round((dx / joyMaxRadius) * 127 * factor);
+        axisY = Math.round((dy / joyMaxRadius) * 127 * factor);
+        axisX = Math.max(-127, Math.min(127, axisX));
+        axisY = Math.max(-127, Math.min(127, axisY));
+      }
+
+      // HID Report Byte 2 & Byte 3: Analog X/Y
+      state.hidReport[2] = (axisX + 128) & 0xFF;
+      state.hidReport[3] = (axisY + 128) & 0xFF;
+      updateHidDisplay();
+    }
+
+    function handleJoyEnd() {
+      if (!joystickActive) return;
+      joystickActive = false;
+      joystickThumb.style.transform = 'translate(0px, 0px)';
+      state.hidReport[2] = 128; // Centered
+      state.hidReport[3] = 128; // Centered
+      updateHidDisplay();
+    }
+
+    joystickBase.addEventListener('touchstart', handleJoyStart, { passive: false });
+    window.addEventListener('touchmove', handleJoyMove, { passive: false });
+    window.addEventListener('touchend', handleJoyEnd);
+    window.addEventListener('touchcancel', handleJoyEnd);
+
+    joystickBase.addEventListener('mousedown', handleJoyStart);
+    window.addEventListener('mousemove', handleJoyMove);
+    window.addEventListener('mouseup', handleJoyEnd);
+
+    // --- Smart Mouse / Trackpad Pointer Logic ---
+    const mouseTrackpad = document.getElementById('mouse-trackpad');
+    const mouseCoords = document.getElementById('mouse-coords');
+    let mouseActive = false;
+    let lastMousePos = { x: 0, y: 0 };
+
+    function handleMouseTrackStart(e) {
+      mouseActive = true;
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      lastMousePos = { x: clientX, y: clientY };
+    }
+
+    function handleMouseTrackMove(e) {
+      if (!mouseActive) return;
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+      const deltaX = Math.round((clientX - lastMousePos.x) * state.mouseSens);
+      const deltaY = Math.round((clientY - lastMousePos.y) * state.mouseSens);
+
+      lastMousePos = { x: clientX, y: clientY };
+      mouseCoords.textContent = `ΔX: ${deltaX} | ΔY: ${deltaY}`;
+
+      // Update Mouse HID Report (Byte 1: dX, Byte 2: dY)
+      state.mouseReport[1] = deltaX & 0xFF;
+      state.mouseReport[2] = deltaY & 0xFF;
+      transmitHidReport();
+    }
+
+    function handleMouseTrackEnd() {
+      mouseActive = false;
+      state.mouseReport[1] = 0;
+      state.mouseReport[2] = 0;
+      mouseCoords.textContent = 'ΔX: 0 | ΔY: 0';
+      transmitHidReport();
+    }
+
+    mouseTrackpad.addEventListener('touchstart', handleMouseTrackStart, { passive: false });
+    mouseTrackpad.addEventListener('touchmove', handleMouseTrackMove, { passive: false });
+    mouseTrackpad.addEventListener('touchend', handleMouseTrackEnd);
+    mouseTrackpad.addEventListener('mousedown', handleMouseTrackStart);
+    window.addEventListener('mousemove', (e) => { if (mouseActive) handleMouseTrackMove(e); });
+    window.addEventListener('mouseup', handleMouseTrackEnd);
+
+    // Mouse Click Buttons
+    const btnMouseLeft = document.getElementById('btn-mouse-left');
+    const btnMouseRight = document.getElementById('btn-mouse-right');
+
+    btnMouseLeft.addEventListener('pointerdown', () => {
+      triggerFeedback();
+      state.mouseReport[0] |= 0x01; // Left click bit
+      transmitHidReport();
+    });
+    btnMouseLeft.addEventListener('pointerup', () => {
+      state.mouseReport[0] &= ~0x01;
+      transmitHidReport();
+    });
+
+    btnMouseRight.addEventListener('pointerdown', () => {
+      triggerFeedback();
+      state.mouseReport[0] |= 0x02; // Right click bit
+      transmitHidReport();
+    });
+    btnMouseRight.addEventListener('pointerup', () => {
+      state.mouseReport[0] &= ~0x02;
+      transmitHidReport();
+    });
+
+    // Pause & Inventory buttons
+    document.querySelectorAll('[data-btn-id="btn-pause"], [data-btn-id="btn-inv"]').forEach(btn => {
+      btn.addEventListener('pointerdown', () => {
+        triggerFeedback();
+        updateHidButton(btn.dataset.btnId, true);
+      });
+      btn.addEventListener('pointerup', () => {
+        updateHidButton(btn.dataset.btnId, false);
+      });
+    });
+
+    // --- HID Packet Stream Visualizer & Simulator ---
+    const hidHexStream = document.getElementById('hid-hex-stream');
+    const buttonBitMap = {
+      'btn-use': 0,
+      'btn-place': 1,
+      'btn-run': 2,
+      'btn-jump': 3,
+      'btn-crouch': 4,
+      'btn-attack': 5,
+      'btn-reload': 6,
+      'btn-custom': 7,
+      'btn-pause': 8,
+      'btn-inv': 9
+    };
+
+    function updateHidButton(btnId, pressed) {
+      const bitIndex = buttonBitMap[btnId] !== undefined ? buttonBitMap[btnId] : 0;
+      const byteIndex = bitIndex < 8 ? 0 : 1;
+      const bitMask = 1 << (bitIndex % 8);
+
+      if (pressed) {
+        state.hidReport[byteIndex] |= bitMask;
+      } else {
+        state.hidReport[byteIndex] &= ~bitMask;
+      }
+
+      updateHidDisplay();
+      transmitHidReport();
+    }
+
+    function updateHidDisplay() {
+      const hexArr = Array.from(state.hidReport).map(b => b.toString(16).padStart(2, '0').toUpperCase());
+      hidHexStream.textContent = hexArr.join(' ');
+    }
+
+    function transmitHidReport() {
+      if (state.connected || state.simulatedLoopback) {
+        // Measure synthetic round trip ping
+        const rtt = Math.floor(Math.random() * 6) + 12; // 12-18ms low latency
+        state.lastLatency = rtt;
+        document.getElementById('hud-latency').textContent = `${rtt} ms`;
+      }
+    }
+
+    // --- Web Bluetooth API Hardware Integration ---
+    const btnNavBt = document.getElementById('nav-btn-bt');
+    const modalBt = document.getElementById('modal-bluetooth');
+    const modalBtCard = document.getElementById('modal-bluetooth-card');
+    const btnCloseBtModal = document.getElementById('btn-close-bt-modal');
+    const btnStartGamepadDismiss = document.getElementById('btn-start-gamepad-dismiss');
+    const btnScanConnect = document.getElementById('btn-scan-connect');
+    const btnDisconnect = document.getElementById('btn-disconnect');
+    const navBtDot = document.getElementById('nav-bt-dot');
+    const navBtLabel = document.getElementById('nav-bt-label');
+    const btModalStatusText = document.getElementById('bt-modal-status-text');
+    const btModalDeviceName = document.getElementById('bt-modal-device-name');
+    const btIndicatorPulse = document.getElementById('bt-indicator-pulse');
+
+    function closeBluetoothModal() {
+      modalBt.classList.add('hidden');
+      triggerFeedback();
+    }
+
+    btnNavBt.addEventListener('click', () => modalBt.classList.remove('hidden'));
+    btnCloseBtModal.addEventListener('click', closeBluetoothModal);
+    if (btnStartGamepadDismiss) {
+      btnStartGamepadDismiss.addEventListener('click', closeBluetoothModal);
+    }
+
+    // Dismiss when tapping outside the modal card (backdrop click)
+    modalBt.addEventListener('click', (e) => {
+      if (e.target === modalBt) {
+        closeBluetoothModal();
+      }
+    });
+
+    btnScanConnect.addEventListener('click', async () => {
+      logBt('Requesting nearby Bluetooth devices...');
+      if (!navigator.bluetooth) {
+        logBt('Web Bluetooth not natively supported in this browser. Activating Simulated HID Loopback mode.');
+        showToast('Web Bluetooth API unavailable in current browser. Using simulated HID engine.', 'warn');
+        mockConnect('Smart TV Android HID [Emulated]');
+        return;
+      }
+
+      try {
+        logBt('Filtering for Generic HID / Human Interface Device services...');
+        const device = await navigator.bluetooth.requestDevice({
+          acceptAllDevices: true,
+          optionalServices: ['battery_service', 'human_interface_device', 0x1812]
+        });
+
+        logBt(`Device discovered: ${device.name || 'Unknown Device'}`);
+        state.device = device;
+
+        device.addEventListener('gattserverdisconnected', onDeviceDisconnected);
+
+        logBt('Connecting to GATT server...');
+        const server = await device.gatt.connect();
+        state.server = server;
+        
+        applyConnectedState(device.name || 'Smart TV Controller');
+        logBt('Successfully paired and connected via Bluetooth HID!');
+        showToast(`Connected to ${device.name || 'Smart TV'}`, 'success');
+      } catch (err) {
+        logBt(`Connection aborted or failed: ${err.message}`);
+        if (state.simulatedLoopback) {
+          logBt('Connecting via Simulated HID Loopback profile...');
+          mockConnect('Android TV (Simulated HID)');
+        } else {
+          showToast('Pairing canceled or target device rejected HID profile.', 'error');
+        }
+      }
+    });
+
+    function mockConnect(mockName) {
+      setTimeout(() => {
+        applyConnectedState(mockName);
+        logBt(`Established wireless bridge with ${mockName}`);
+        showToast(`Connected to ${mockName}`, 'success');
+      }, 600);
+    }
+
+    function applyConnectedState(deviceName) {
+      state.connected = true;
+      navBtDot.className = 'w-2.5 h-2.5 rounded-full bg-accentGreen status-pulse-connected';
+      navBtLabel.textContent = 'CONNECTED';
+      navBtLabel.className = 'font-mono text-[11px] text-cyanGlow font-bold';
+
+      btModalStatusText.textContent = 'PAIRED & READY';
+      btModalStatusText.className = 'text-base font-bold text-accentGreen mt-0.5';
+      btModalDeviceName.textContent = deviceName;
+      btIndicatorPulse.className = 'w-4 h-4 rounded-full bg-accentGreen status-pulse-connected';
+
+      btnScanConnect.disabled = true;
+      btnScanConnect.classList.add('opacity-40');
+      btnDisconnect.disabled = false;
+      btnDisconnect.classList.remove('opacity-40');
+    }
+
+    function onDeviceDisconnected() {
+      logBt('Bluetooth GATT server disconnected.');
+      state.connected = false;
+      navBtDot.className = 'w-2.5 h-2.5 rounded-full bg-accentRed';
+      navBtLabel.textContent = 'DISCONNECTED';
+      navBtLabel.className = 'font-mono text-[11px] text-slate-300';
+
+      btModalStatusText.textContent = 'DISCONNECTED';
+      btModalStatusText.className = 'text-base font-bold text-accentRed mt-0.5';
+      btModalDeviceName.textContent = 'No Device Connected';
+      btIndicatorPulse.className = 'w-4 h-4 rounded-full bg-accentRed';
+
+      btnScanConnect.disabled = false;
+      btnScanConnect.classList.remove('opacity-40');
+      btnDisconnect.disabled = true;
+      btnDisconnect.classList.add('opacity-40');
+      document.getElementById('hud-latency').textContent = '-- ms';
+
+      if (state.autoReconnect && state.device) {
+        logBt('Auto-reconnect active. Attempting reconnection in 3s...');
+        setTimeout(() => {
+          if (!state.connected && state.device) {
+            state.device.gatt.connect().then(() => {
+              applyConnectedState(state.device.name);
+            }).catch(e => logBt(`Auto-reconnect failed: ${e.message}`));
+          }
+        }, 3000);
+      }
+    }
+
+    btnDisconnect.addEventListener('click', () => {
+      if (state.device && state.device.gatt.connected) {
+        state.device.gatt.disconnect();
+      } else {
+        onDeviceDisconnected();
+      }
+      showToast('Bluetooth disconnected', 'warn');
+    });
+
+    document.getElementById('chk-auto-reconnect').addEventListener('change', (e) => {
+      state.autoReconnect = e.target.checked;
+    });
+
+    document.getElementById('chk-simulated-loopback').addEventListener('change', (e) => {
+      state.simulatedLoopback = e.target.checked;
+    });
+
+    // --- Fullscreen and Landscape Mode Support ---
+    const btnToggleFullscreen = document.getElementById('btn-toggle-fullscreen');
+    const btnRequestLandscape = document.getElementById('btn-request-landscape');
+    const btnDismissLandscape = document.getElementById('btn-dismiss-landscape');
+    const landscapeAdvisor = document.getElementById('landscape-advisor');
+
+    async function enterFullscreenMode() {
+      try {
+        if (!document.fullscreenElement) {
+          await document.documentElement.requestFullscreen();
+        }
+        if (screen.orientation && screen.orientation.lock) {
+          await screen.orientation.lock('landscape').catch(() => {});
+        }
+        landscapeAdvisor.classList.add('hidden');
+        showToast('Entering Fullscreen Landscape Controller', 'info');
+      } catch (err) {
+        landscapeAdvisor.classList.add('hidden');
+      }
+    }
+
+    btnToggleFullscreen.addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        enterFullscreenMode();
+      } else {
+        document.exitFullscreen();
+      }
+    });
+
+    btnRequestLandscape.addEventListener('click', enterFullscreenMode);
+    btnDismissLandscape.addEventListener('click', () => landscapeAdvisor.classList.add('hidden'));
+
+    // --- Customization Studio Drawer ---
+    const btnToggleStudio = document.getElementById('btn-toggle-studio');
+    const panelStudio = document.getElementById('panel-studio');
+    const studioBanner = document.getElementById('studio-banner');
+    const btnStudioDone = document.getElementById('btn-studio-done');
+    const btnCloseStudio = document.getElementById('btn-close-studio');
+    const btnAddCustomBtn = document.getElementById('btn-add-custom-btn');
+    const btnResetLayout = document.getElementById('btn-reset-layout');
+
+    function toggleStudioMode(active) {
+      state.studioMode = active !== undefined ? active : !state.studioMode;
+      if (state.studioMode) {
+        panelStudio.classList.remove('hidden');
+        studioBanner.classList.remove('hidden');
+        renderButtons();
+        showToast('Customization Studio: Drag buttons to reposition', 'info');
+      } else {
+        panelStudio.classList.add('hidden');
+        studioBanner.classList.add('hidden');
+        state.selectedBtnId = null;
+        renderButtons();
+      }
+    }
+
+    btnToggleStudio.addEventListener('click', () => toggleStudioMode());
+    btnStudioDone.addEventListener('click', () => toggleStudioMode(false));
+    btnCloseStudio.addEventListener('click', () => toggleStudioMode(false));
+
+    // Studio Controls
+    const sliderBtnScale = document.getElementById('slider-btn-scale');
+    const sliderStickScale = document.getElementById('slider-stick-scale');
+    const sliderBtnOpacity = document.getElementById('slider-btn-opacity');
+
+    sliderBtnScale.addEventListener('input', (e) => {
+      state.globalBtnScale = parseFloat(e.target.value);
+      document.getElementById('val-btn-scale').textContent = `${state.globalBtnScale.toFixed(2)}x`;
+      renderButtons();
+    });
+
+    sliderStickScale.addEventListener('input', (e) => {
+      state.globalStickScale = parseFloat(e.target.value);
+      document.getElementById('val-stick-scale').textContent = `${state.globalStickScale.toFixed(2)}x`;
+      const base = 180 * state.globalStickScale;
+      const joyWrapper = document.getElementById('joystick-wrapper');
+      joyWrapper.style.width = `${base}px`;
+      joyWrapper.style.height = `${base}px`;
+    });
+
+    sliderBtnOpacity.addEventListener('input', (e) => {
+      state.globalOpacity = parseFloat(e.target.value);
+      document.getElementById('val-btn-opacity').textContent = `${Math.round(state.globalOpacity * 100)}%`;
+      renderButtons();
+    });
+
+    document.getElementById('chk-grid-snap').addEventListener('change', (e) => {
+      state.gridSnap = e.target.checked;
+    });
+
+    document.getElementById('chk-haptic-feedback').addEventListener('change', (e) => {
+      state.haptics = e.target.checked;
+    });
+
+    document.getElementById('chk-audio-feedback').addEventListener('change', (e) => {
+      state.audio = e.target.checked;
+      soundEngine.enabled = e.target.checked;
+    });
+
+    btnAddCustomBtn.addEventListener('click', () => {
+      const newId = `btn-custom-${Date.now().toString().slice(-4)}`;
+      state.profileData.buttons.push({
+        id: newId,
+        label: 'EXTRA',
+        key: 'KeyX',
+        x: 60,
+        y: 50,
+        size: 60,
+        color: 'cyan'
+      });
+      renderButtons();
+      saveLayoutToStorage();
+      showToast('New Custom Button added to layout!', 'success');
+    });
+
+    btnResetLayout.addEventListener('click', () => {
+      state.profileData = JSON.parse(JSON.stringify(DEFAULT_PROFILES[state.activeProfileKey] || DEFAULT_PROFILES.default));
+      renderButtons();
+      saveLayoutToStorage();
+      showToast('Profile layout restored to default', 'info');
+    });
+
+    // --- Settings & Profiles Modal ---
+    const btnToggleSettings = document.getElementById('btn-toggle-settings');
+    const modalSettings = document.getElementById('modal-settings');
+    const btnCloseSettingsModal = document.getElementById('btn-close-settings-modal');
+
+    btnToggleSettings.addEventListener('click', () => modalSettings.classList.remove('hidden'));
+    btnCloseSettingsModal.addEventListener('click', () => modalSettings.classList.add('hidden'));
+
+    // Profile Switching
+    document.querySelectorAll('.profile-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        const profileKey = chip.dataset.profile;
+        switchProfile(profileKey);
+      });
+    });
+
+    function switchProfile(key) {
+      if (!DEFAULT_PROFILES[key]) return;
+      state.activeProfileKey = key;
+      state.profileData = JSON.parse(JSON.stringify(DEFAULT_PROFILES[key]));
+
+      // Update styling on chip buttons
+      document.querySelectorAll('.profile-chip').forEach(chip => {
+        if (chip.dataset.profile === key) {
+          chip.className = 'profile-chip py-2 px-3 rounded-lg border border-cyanGlow bg-cyanGlow/20 text-cyanGlow text-xs font-bold font-mono transition text-left shadow-cyan-glow-sm';
+        } else {
+          chip.className = 'profile-chip py-2 px-3 rounded-lg border border-surfaceBorder bg-pitch text-slate-300 hover:border-cyanGlow text-xs font-bold font-mono transition text-left';
+        }
+      });
+
+      renderButtons();
+      saveLayoutToStorage();
+      showToast(`Activated Profile: ${state.profileData.name}`, 'info');
+    }
+
+    // Calibration Sliders
+    const sliderJoySens = document.getElementById('slider-joy-sens');
+    const sliderJoyDeadzone = document.getElementById('slider-joy-deadzone');
+    const sliderMouseSens = document.getElementById('slider-mouse-sens');
+
+    sliderJoySens.addEventListener('input', (e) => {
+      state.joystickSens = parseFloat(e.target.value);
+      document.getElementById('val-joy-sens').textContent = `${state.joystickSens.toFixed(1)}x`;
+    });
+
+    sliderJoyDeadzone.addEventListener('input', (e) => {
+      state.joystickDeadzone = parseInt(e.target.value);
+      document.getElementById('val-joy-deadzone').textContent = `${state.joystickDeadzone}%`;
+    });
+
+    sliderMouseSens.addEventListener('input', (e) => {
+      state.mouseSens = parseFloat(e.target.value);
+      document.getElementById('val-mouse-sens').textContent = `${state.mouseSens.toFixed(1)}x`;
+    });
+
+    // Profile Import / Export JSON
+    document.getElementById('btn-export-profile').addEventListener('click', () => {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state.profileData, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `gamepad_${state.activeProfileKey}_layout.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+      showToast('Exported layout to JSON', 'success');
+    });
+
+    const fileImportInput = document.getElementById('file-import-input');
+    document.getElementById('btn-import-profile').addEventListener('click', () => fileImportInput.click());
+
+    fileImportInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const parsed = JSON.parse(event.target.result);
+          if (parsed && Array.isArray(parsed.buttons)) {
+            state.profileData = parsed;
+            renderButtons();
+            saveLayoutToStorage();
+            showToast('Profile configuration imported successfully!', 'success');
+          } else {
+            showToast('Invalid layout file structure', 'error');
+          }
+        } catch (err) {
+          showToast('Failed to parse JSON file', 'error');
+        }
+      };
+      reader.readAsText(file);
+    });
+
+    // --- LocalStorage Persistence ---
+    function saveLayoutToStorage() {
+      try {
+        localStorage.setItem(`smart_gamepad_profile_${state.activeProfileKey}`, JSON.stringify(state.profileData));
+      } catch (e) {
+        // Storage unavailable
+      }
+    }
+
+    function loadSavedLayout() {
+      try {
+        const saved = localStorage.getItem(`smart_gamepad_profile_${state.activeProfileKey}`);
+        if (saved) {
+          state.profileData = JSON.parse(saved);
+        }
+      } catch (e) {
+        // Default fallback
+      }
+    }
+
+    // --- Keyboard Event Passthrough (For Testing on Laptop / Chromebook) ---
+    window.addEventListener('keydown', (e) => {
+      const match = state.profileData.buttons.find(b => b.key === e.code);
+      if (match) {
+        const el = document.getElementById(match.id);
+        if (el) el.classList.add('active-touch');
+        updateHidButton(match.id, true);
+      }
+    });
+
+    window.addEventListener('keyup', (e) => {
+      const match = state.profileData.buttons.find(b => b.key === e.code);
+      if (match) {
+        const el = document.getElementById(match.id);
+        if (el) el.classList.remove('active-touch');
+        updateHidButton(match.id, false);
+      }
+    });
+
+    // --- Initialization ---
+    window.addEventListener('load', () => {
+      loadSavedLayout();
+      renderButtons();
+      updateHidDisplay();
+
+      // Show welcome instructions
+      setTimeout(() => {
+        showToast('UNIVERSAL SMART GAMEPAD Ready. Connect to TV or open Studio.', 'info');
+      }, 500);
+    });
+  </script>
+</body>
+</html>
+```
